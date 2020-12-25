@@ -14,6 +14,7 @@ namespace Microsoft.VisualStudio.Services.Agent
         public Type PreferredOnWindows { get; set; }
         public Type PreferredOnMacOS { get; set; }
         public Type PreferredOnLinux { get; set; }
+        public Type PreferredOnFreeBSD { get; set; }
     }
 
     public interface IAgentService

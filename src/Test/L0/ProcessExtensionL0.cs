@@ -37,7 +37,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                             : "sleep";
                         string sleepArgs = (TestUtil.IsWindows())
                             ? "-Command \"Start-Sleep -s 15\""
-                            : "15s";
+                            : "15";
                         var startInfo = new ProcessStartInfo(sleepCmd, sleepArgs);
                         startInfo.Environment[envName] = envValue;
                         sleep = Process.Start(startInfo);

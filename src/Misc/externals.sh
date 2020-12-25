@@ -173,8 +173,8 @@ if [[ "$PACKAGERUNTIME" == "osx-x64" ]]; then
     acquireExternalTool "$NODE_URL/v${NODE10_VERSION}/node-v${NODE10_VERSION}-darwin-x64.tar.gz" node10 fix_nested_dir
 fi
 
-# Download the external tools common across OSX and Linux PACKAGERUNTIMEs.
-if [[ "$PACKAGERUNTIME" == "linux-x64" || "$PACKAGERUNTIME" == "linux-arm" || "$PACKAGERUNTIME" == "linux-arm64" || "$PACKAGERUNTIME" == "osx-x64" || "$PACKAGERUNTIME" == "rhel.6-x64" ]]; then
+# Download the external tools common across OSX, Linux and FreeBSD PACKAGERUNTIMEs.
+if [[ "$PACKAGERUNTIME" == "linux-x64" || "$PACKAGERUNTIME" == "linux-arm" || "$PACKAGERUNTIME" == "linux-arm64" || "$PACKAGERUNTIME" == "osx-x64" || "$PACKAGERUNTIME" == "rhel.6-x64" || "$PACKAGERUNTIME" == "freebsd-x64" ]]; then
     acquireExternalTool "$CONTAINER_URL/tee/14_135_0/TEE-CLC-14.135.0.zip" tee fix_nested_dir
     acquireExternalTool "$CONTAINER_URL/vso-task-lib/0.5.5/vso-task-lib.tar.gz" vso-task-lib
 fi
@@ -193,6 +193,17 @@ fi
 if [[ "$PACKAGERUNTIME" == "linux-arm64" ]]; then
     acquireExternalTool "$NODE_URL/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-arm64.tar.gz" node fix_nested_dir
     acquireExternalTool "$NODE_URL/v${NODE10_VERSION}/node-v${NODE10_VERSION}-linux-arm64.tar.gz" node10 fix_nested_dir
+fi
+
+# Configure the external tools only for FreeBSD.
+if [[ "$PACKAGERUNTIME" == "freebsd-x64" ]]; then
+    # The node package must already be installed. Use softlinks to the existing install.
+    nodeBinDir="$LAYOUT_DIR/externals/node/bin"
+    mkdir -p "$nodeBinDir"
+    ln -s /usr/local/bin/node "$nodeBinDir/node"
+    node10BinDir="$LAYOUT_DIR/externals/node10/bin"
+    mkdir -p "$node10BinDir"
+    ln -s /usr/local/bin/node "$node10BinDir/node"
 fi
 
 if [[ "$L1_MODE" != "" || "$PRECACHE" != "" ]]; then

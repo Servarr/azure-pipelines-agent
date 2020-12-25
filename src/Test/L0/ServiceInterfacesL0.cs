@@ -134,6 +134,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                     nameof(ServiceLocatorAttribute.PreferredOnWindows),
                     nameof(ServiceLocatorAttribute.PreferredOnMacOS),
                     nameof(ServiceLocatorAttribute.PreferredOnLinux),
+                    nameof(ServiceLocatorAttribute.PreferredOnFreeBSD),
                 })
                 {
                     CustomAttributeNamedArgument arg =

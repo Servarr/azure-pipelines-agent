@@ -401,6 +401,11 @@ namespace Microsoft.VisualStudio.Services.Agent
                         {
                             platformTarget = arg.TypedValue.Value as Type;
                         }
+                        else if (PlatformUtil.RunningOnFreeBSD
+                            && string.Equals(arg.MemberName, nameof(ServiceLocatorAttribute.PreferredOnFreeBSD), StringComparison.Ordinal))
+                        {
+                            platformTarget = arg.TypedValue.Value as Type;
+                        }
                     }
                 }
 

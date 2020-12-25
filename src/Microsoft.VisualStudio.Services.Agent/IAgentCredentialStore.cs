@@ -10,6 +10,7 @@ namespace Microsoft.VisualStudio.Services.Agent
       PreferredOnWindows = typeof(WindowsAgentCredentialStore),
       PreferredOnMacOS = typeof(MacOSAgentCredentialStore),
       PreferredOnLinux = typeof(LinuxAgentCredentialStore),
+      PreferredOnFreeBSD = typeof(FreeBSDAgentCredentialStore),
       Default = typeof(NoOpAgentCredentialStore)
       )]
     public interface IAgentCredentialStore : IAgentService

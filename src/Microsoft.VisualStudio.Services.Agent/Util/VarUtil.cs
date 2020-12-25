@@ -39,6 +39,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                         return "Darwin";
                     case PlatformUtil.OS.Windows:
                         return Environment.GetEnvironmentVariable("OS");
+                    case PlatformUtil.OS.FreeBSD:
+                        return "FreeBSD";
                     default:
                         throw new NotSupportedException(); // Should never reach here.
                 }

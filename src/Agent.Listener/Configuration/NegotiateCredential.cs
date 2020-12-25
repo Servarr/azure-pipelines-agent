@@ -57,6 +57,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
             {
                 case PlatformUtil.OS.Linux:
                 case PlatformUtil.OS.OSX:
+                case PlatformUtil.OS.FreeBSD:
                     credentialCache.Add(new Uri(url), "NTLM", credential);
                     break;
                 case PlatformUtil.OS.Windows:

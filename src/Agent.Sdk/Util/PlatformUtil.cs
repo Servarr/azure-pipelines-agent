@@ -21,6 +21,7 @@ namespace Agent.Sdk
             Linux,
             OSX,
             Windows,
+            FreeBSD,
         }
 
         public static OS HostOS
@@ -40,6 +41,10 @@ namespace Agent.Sdk
                 {
                     return OS.Windows;
                 }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.FreeBSD))
+                {
+                    return OS.FreeBSD;
+                }
 
                 throw new NotImplementedException($"Unsupported OS: {RuntimeInformation.OSDescription}");
             }
@@ -58,6 +63,11 @@ namespace Agent.Sdk
         public static bool RunningOnLinux
         {
             get => PlatformUtil.HostOS == PlatformUtil.OS.Linux;
+        }
+
+        public static bool RunningOnFreeBSD
+        {
+            get => PlatformUtil.HostOS == PlatformUtil.OS.FreeBSD;
         }
 
         public static bool RunningOnRHEL6

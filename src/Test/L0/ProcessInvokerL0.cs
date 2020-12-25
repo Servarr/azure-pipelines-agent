@@ -54,7 +54,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                 {
                     processInvoker.Initialize(hc);
                     Stopwatch watch = Stopwatch.StartNew();
-                    Task execTask = processInvoker.ExecuteAsync("", "bash", $"-c \"sleep {SecondsToRun}s\"", null, tokenSource.Token);
+                    Task execTask = processInvoker.ExecuteAsync("", "bash", $"-c \"sleep {SecondsToRun}\"", null, tokenSource.Token);
 
                     await Task.Delay(500);
                     tokenSource.Cancel();
@@ -187,6 +187,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
         [Trait("Category", "Common")]
         [Trait("SkipOn", "darwin")]
         [Trait("SkipOn", "windows")]
+        [Trait("SkipOn", "freebsd")]
         public async Task OomScoreAdjIsWriten_Default()
         {
             // We are on a system that supports oom_score_adj in procfs as assumed by ProcessInvoker
@@ -227,6 +228,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
         [Trait("Category", "Common")]
         [Trait("SkipOn", "darwin")]
         [Trait("SkipOn", "windows")]
+        [Trait("SkipOn", "freebsd")]
         public async Task OomScoreAdjIsWriten_FromEnv()
         {
             // We are on a system that supports oom_score_adj in procfs as assumed by ProcessInvoker
@@ -269,6 +271,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
         [Trait("Category", "Common")]
         [Trait("SkipOn", "darwin")]
         [Trait("SkipOn", "windows")]
+        [Trait("SkipOn", "freebsd")]
         public async Task OomScoreAdjIsInherited()
         {
             // We are on a system that supports oom_score_adj in procfs as assumed by ProcessInvoker

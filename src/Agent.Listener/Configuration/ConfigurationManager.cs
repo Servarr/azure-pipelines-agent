@@ -155,6 +155,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
             {
                 case PlatformUtil.OS.OSX:
                 case PlatformUtil.OS.Linux:
+                case PlatformUtil.OS.FreeBSD:
                     // Write the section header.
                     WriteSection(StringUtil.Loc("EulasSectionHeader"));
 
@@ -494,6 +495,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
                 var serviceControlManager = HostContext.GetService<IMacOSServiceControlManager>();
                 serviceControlManager.GenerateScripts(agentSettings);
             }
+            else if (PlatformUtil.RunningOnFreeBSD)
+            {
+                // generate service config script for FreeBSD
+                var serviceControlManager = HostContext.GetService<IFreeBSDServiceControlManager>();
+                serviceControlManager.GenerateScripts(agentSettings);
+            }
         }
 
         public async Task UnconfigureAsync(CommandSettings command)
@@ -522,6 +529,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
                     {
                         // unconfig macOS service first
                         throw new InvalidOperationException(StringUtil.Loc("UnconfigureOSXService"));
+                    }
+                    else if (PlatformUtil.RunningOnFreeBSD)
+                    {
+                        // unconfig FreeBSD service first
+                        throw new InvalidOperationException(StringUtil.Loc("UnconfigureFreeBSDService"));
                     }
                 }
                 else

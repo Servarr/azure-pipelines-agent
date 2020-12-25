@@ -98,6 +98,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L1.Worker
         // Remove these SkipOn traits once the task-lib is updated.
         [Trait("SkipOn", "darwin")]
         [Trait("SkipOn", "linux")]
+        [Trait("SkipOn", "freebsd")]
         [Trait("Category", "Worker")]
         public async Task Input_HandlesTrailingSpace(bool disableInputTrimming)
         {
