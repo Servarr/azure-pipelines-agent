@@ -20,7 +20,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/.helpers.sh"
 
 DOTNETSDK_ROOT="$SCRIPT_DIR/../_dotnetsdk"
-DOTNETSDK_VERSION="3.1.100"
+DOTNETSDK_VERSION="5.0.402"
 DOTNETSDK_INSTALLDIR="$DOTNETSDK_ROOT/$DOTNETSDK_VERSION"
 AGENT_VERSION=$(cat "$SCRIPT_DIR/agentversion")
 
@@ -90,6 +90,7 @@ function cmd_build ()
          || failed build
     fi
 
+    cp ../il_patch/output/Microsoft.VisualStudio.Services.Content.Common.dll "${LAYOUT_DIR}/bin"
 
     mkdir -p "${LAYOUT_DIR}/bin/en-US"
     grep --invert-match '^ *"CLI-WIDTH-' ./Misc/layoutbin/en-US/strings.json > "${LAYOUT_DIR}/bin/en-US/strings.json"
@@ -109,6 +110,8 @@ function cmd_layout ()
         dotnet msbuild -t:${TARGET} -p:PackageRuntime="${RUNTIME_ID}" -p:PackageType="${PACKAGE_TYPE}" -p:BUILDCONFIG="${BUILD_CONFIG}" -p:AgentVersion="${AGENT_VERSION}" -p:LayoutRoot="${LAYOUT_DIR}" -p:CodeAnalysis="true" \
          || failed build
     fi
+
+    cp ../il_patch/output/Microsoft.VisualStudio.Services.Content.Common.dll "${LAYOUT_DIR}/bin"
 
     mkdir -p "${LAYOUT_DIR}/bin/en-US"
     grep --invert-match '^ *"CLI-WIDTH-' ./Misc/layoutbin/en-US/strings.json > "${LAYOUT_DIR}/bin/en-US/strings.json"
@@ -291,7 +294,7 @@ else
     RUNTIME_ID=$DETECTED_RUNTIME_ID
 fi
 
-_VALID_RIDS='linux-x64:linux-arm:linux-arm64:rhel.6-x64:osx-x64:win-x64:win-x86'
+_VALID_RIDS='linux-x64:linux-arm:linux-arm64:rhel.6-x64:osx-x64:win-x64:win-x86:freebsd-x64'
 if [[ ":$_VALID_RIDS:" != *:$RUNTIME_ID:* ]]; then
     failed "must specify a valid target runtime ID (one of: $_VALID_RIDS)"
 fi
@@ -305,39 +308,6 @@ PACKAGE_DIR="$SCRIPT_DIR/../_package/$RUNTIME_ID"
 REPORT_DIR="$SCRIPT_DIR/../_reports/$RUNTIME_ID"
 INTEGRATION_DIR="$SCRIPT_DIR/../_layout/integrations"
 NODE="${LAYOUT_DIR}/externals/node10/bin/node"
-
-if [[ (! -d "${DOTNETSDK_INSTALLDIR}") || (! -e "${DOTNETSDK_INSTALLDIR}/.${DOTNETSDK_VERSION}") || (! -e "${DOTNETSDK_INSTALLDIR}/dotnet") ]]; then
-
-    # Download dotnet SDK to ../_dotnetsdk directory
-    heading "Install .NET SDK"
-
-    # _dotnetsdk
-    #           \1.0.x
-    #                            \dotnet
-    #                            \.1.0.x
-    echo "Download dotnetsdk into ${DOTNETSDK_INSTALLDIR}"
-    rm -Rf "${DOTNETSDK_DIR}"
-
-    # run dotnet-install.ps1 on windows, dotnet-install.sh on linux
-    if [[ ("$CURRENT_PLATFORM" == "windows") ]]; then
-        echo "Convert ${DOTNETSDK_INSTALLDIR} to Windows style path"
-        sdkinstallwindow_path=${DOTNETSDK_INSTALLDIR:1}
-        sdkinstallwindow_path=${sdkinstallwindow_path:0:1}:${sdkinstallwindow_path:1}
-        powershell -NoLogo -Sta -NoProfile -NonInteractive -ExecutionPolicy Unrestricted -Command "& \"./Misc/dotnet-install.ps1\" -Version ${DOTNETSDK_VERSION} -InstallDir \"${sdkinstallwindow_path}\" -NoPath; exit \$LastExitCode;" || checkRC dotnet-install.ps1
-    else
-        bash ./Misc/dotnet-install.sh --version ${DOTNETSDK_VERSION} --install-dir "${DOTNETSDK_INSTALLDIR}" --no-path || checkRC dotnet-install.sh
-    fi
-
-    echo "${DOTNETSDK_VERSION}" > "${DOTNETSDK_INSTALLDIR}/.${DOTNETSDK_VERSION}"
-fi
-
-
-heading ".NET SDK to path"
-
-echo "Adding .NET to PATH (${DOTNETSDK_INSTALLDIR})"
-export PATH=${DOTNETSDK_INSTALLDIR}:$PATH
-echo "Path = $PATH"
-echo ".NET Version = $(dotnet --version)"
 
 heading "Pre-caching external resources for $RUNTIME_ID"
 mkdir -p "${LAYOUT_DIR}" >/dev/null
