@@ -28,7 +28,7 @@ namespace Agent.Sdk
             [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1065: Do not raise exceptions in unexpected")]
             get
             {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.FreeBSD))
                 {
                     return OS.Linux;
                 }
