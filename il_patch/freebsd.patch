@@ -1,0 +1,13 @@
+diff -Naur il/il.txt il_patched/il.txt
+--- il/il.txt	2021-11-08 12:59:04.442612200 +0000
++++ il_patched/il.txt	2021-11-08 10:59:51.288717500 +0000
+
+@@ -15564,7 +15564,7 @@
+     .maxstack  8
+     IL_0000:  call       valuetype [netstandard]System.Runtime.InteropServices.OSPlatform [netstandard]System.Runtime.InteropServices.OSPlatform::get_Windows()
+     IL_0005:  call       bool [netstandard]System.Runtime.InteropServices.RuntimeInformation::IsOSPlatform(valuetype [netstandard]System.Runtime.InteropServices.OSPlatform)
+-    IL_000a:  brfalse.s  IL_0014
++    IL_000a:  brfalse.s  IL_002c
+ 
+     IL_000c:  ldarg.0
+     IL_000d:  ldarg.1

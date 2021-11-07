@@ -7,6 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Text.Json;
 using System.Threading;
 
 namespace Microsoft.VisualStudio.Services.Agent
@@ -34,29 +36,71 @@ namespace Microsoft.VisualStudio.Services.Agent
 
         private static string GetEnvironmentVariableLinux(Process process, IHostContext hostContext, string variable)
         {
+            // On FreeBSD we use procstat and JSON formatted output provided by libxo
             var trace = hostContext.GetTrace(nameof(ProcessExtensions));
-
-            if (!Directory.Exists("/proc"))
-            {
-                return GetEnvironmentVariableUsingPs(process, hostContext, variable);
-            }
+            trace.Info($"Read env from output of `procstat -e --libxo json {process.Id}`");
 
             Dictionary<string, string> env = new Dictionary<string, string>();
-            string envFile = $"/proc/{process.Id}/environ";
-            trace.Info($"Read env from {envFile}");
-            string envContent = File.ReadAllText(envFile);
-            if (!string.IsNullOrEmpty(envContent))
+            List<string> procstatOut = new List<string>();
+            object outputLock = new object();
+            using (var p = hostContext.CreateService<IProcessInvoker>())
             {
-                // on linux, environment variables are seprated by '\0'
-                var envList = envContent.Split('\0', StringSplitOptions.RemoveEmptyEntries);
-                foreach (var envStr in envList)
+                p.OutputDataReceived += delegate (object sender, ProcessDataReceivedEventArgs stdout)
                 {
-                    // split on the first '='
-                    var keyValuePair = envStr.Split('=', 2);
-                    if (keyValuePair.Length == 2)
+                    if (!string.IsNullOrEmpty(stdout.Data))
                     {
-                        env[keyValuePair[0]] = keyValuePair[1];
-                        trace.Verbose($"PID:{process.Id} ({keyValuePair[0]}={keyValuePair[1]})");
+                        lock (outputLock)
+                        {
+                            procstatOut.Add(stdout.Data);
+                        }
+                    }
+                };
+
+                p.ErrorDataReceived += delegate (object sender, ProcessDataReceivedEventArgs stderr)
+                {
+                    if (!string.IsNullOrEmpty(stderr.Data))
+                    {
+                        lock (outputLock)
+                        {
+                            trace.Error(stderr.Data);
+                        }
+                    }
+                };
+
+                int exitCode = p.ExecuteAsync(workingDirectory: hostContext.GetDirectory(WellKnownDirectory.Root),
+                                                fileName: "procstat",
+                                                arguments: $"-e --libxo json {process.Id}",
+                                                environment: null,
+                                                cancellationToken: CancellationToken.None).GetAwaiter().GetResult();
+                if (exitCode == 0)
+                {
+                    trace.Info($"Successfully dump environment variables for {process.Id}");
+                    if (procstatOut.Count > 0 && procstatOut[0].StartsWith("{"))
+                    {
+                        string procstatStr = String.Join(' ', procstatOut);
+                        trace.Verbose($"procstat output: '{procstatStr}'");
+
+                        try
+                        {
+                            var procstatDoc = JsonDocument.Parse(procstatStr);
+
+                            env = procstatDoc.RootElement
+                                .GetProperty("procstat")
+                                .GetProperty("environment")
+                                .GetProperty($"{process.Id}")
+                                .GetProperty("environment")
+                                .EnumerateArray()
+                                .ToDictionary(s => s.GetString().Split('=', 2)[0], s => s.GetString().Split('=', 2)[1]);
+
+                            foreach (var pair in env)
+                            {
+                                trace.Verbose($"PID:{process.Id} ({pair.Key}={pair.Value})");
+                            }
+                        }
+                        catch(Exception e)
+                        {
+                            trace.Error(e);
+                        }
                     }
                 }
             }
