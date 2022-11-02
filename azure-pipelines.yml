@@ -1,0 +1,42 @@
+variables:
+  dotnetVersion: '5.0.402'
+  major: 2
+  agentBuildNumber: $[counter(variables['major'], 1)]
+
+stages:
+  - stage: Build
+    jobs:
+    - job: Build
+      pool:
+        vmImage: 'ubuntu-latest'
+      steps:
+      - bash: |
+          AGENTVERSION=$(cat src/agentversion)
+          echo "##vso[build.updatebuildnumber]$AGENTVERSION-$AGENTBUILDNUMBER"
+        displayName: 'Set Build Number'
+      - task: UseDotNet@2
+        displayName: 'Install .net core'
+        inputs:
+          version: $(dotnetVersion)
+      - bash: |
+          BUNDLEDVERSIONS=${AGENT_TOOLSDIRECTORY}/dotnet/sdk/${DOTNETVERSION}/Microsoft.NETCoreSdk.BundledVersions.props
+          echo $BUNDLEDVERSIONS
+          grep osx-x64 $BUNDLEDVERSIONS
+          if grep -q freebsd-x64 $BUNDLEDVERSIONS; then
+            echo "BSD already enabled"
+          else
+            echo "Enabling BSD support"
+            sed -i.ORI 's/osx-x64/osx-x64;freebsd-x64/' $BUNDLEDVERSIONS
+          fi
+        displayName: Enable .NET FreeBSD Support
+      - bash: |
+          cd src
+          ./dev.sh layout Release freebsd-x64
+          ./dev.sh package Release freebsd-x64
+        displayName: Build agent
+      - publish: _layout/freebsd-x64
+        artifact: Layout
+        displayName: PublishLayout
+      - publish: _package/freebsd-x64
+        artifact: Package
+        displayName: PublishPackage
